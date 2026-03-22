@@ -40,17 +40,20 @@ class AgentDeps:
     instances: list[ExposedInstance]
 
 
-analysis_agent = Agent(
-    "anthropic:claude-sonnet-4-20250514",
-    deps_type=AgentDeps,
-    output_type=AnalysisOutput,
-    instructions=SYSTEM_INSTRUCTIONS,
-)
+def _create_agent() -> Agent:
+    return Agent(
+        "anthropic:claude-sonnet-4-20250514",
+        deps_type=AgentDeps,
+        output_type=AnalysisOutput,
+        instructions=SYSTEM_INSTRUCTIONS,
+    )
 
 
 def run_analysis(instances: list[ExposedInstance], api_key: str) -> AnalysisOutput:
     """Run the AI analysis on exposed instances."""
     os.environ["ANTHROPIC_API_KEY"] = api_key
+
+    analysis_agent = _create_agent()
 
     deps = AgentDeps(instances=instances)
 

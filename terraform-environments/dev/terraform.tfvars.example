@@ -1,0 +1,7 @@
+aws_region           = "us-east-1"
+environment          = "dev"
+target_account_ids   = []
+ses_sender_email     = "yardenws@gmail.com"
+ses_recipient_emails = ["yardenws@gmail.com"]
+scan_schedule        = "rate(6 hours)"
+create_mock          = true

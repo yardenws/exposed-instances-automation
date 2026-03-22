@@ -17,12 +17,12 @@ Slack /scan command ──────────┘          │
                                          │
                                          ▼
                               Agent Lambda (Pydantic AI + Claude)
-                                   │
-                                   ▼
+                                         │
+                                         ▼
                              Slack App (interactive message)
                              User clicks: Mitigate | Escalate | Dismiss
-                                   │
-                                   ▼
+                                         │
+                                         ▼
                              API Gateway ──► Agent Lambda (dispatcher)
                                               ├──► Mitigation Lambda ──► ec2:StopInstances
                                               └──► Escalation Lambda ──► SES email to team

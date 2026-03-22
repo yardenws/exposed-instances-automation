@@ -8,13 +8,14 @@ def handler(event, context):
     target_account_ids = json.loads(os.environ.get("TARGET_ACCOUNT_IDS", "[]"))
     skip_tag_key = os.environ.get("SKIP_TAG_KEY", "SkipScan")
     skip_tag_value = os.environ.get("SKIP_TAG_VALUE", "true")
-    region = os.environ.get("AWS_REGION_SCAN", "us-east-1")
+    scan_regions = json.loads(os.environ.get("SCAN_REGIONS", '["us-east-1"]'))
 
     all_instances = []
 
     for account_id in target_account_ids:
-        instances = scan_account(account_id, region, skip_tag_key, skip_tag_value)
-        all_instances.extend(instances)
+        for region in scan_regions:
+            instances = scan_account(account_id, region, skip_tag_key, skip_tag_value)
+            all_instances.extend(instances)
 
     return {"instances": all_instances}
 

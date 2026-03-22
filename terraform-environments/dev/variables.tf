@@ -3,6 +3,12 @@ variable "aws_region" {
   type        = string
 }
 
+variable "scan_regions" {
+  description = "List of AWS regions to scan (defaults to aws_region)"
+  type        = list(string)
+  default     = []
+}
+
 variable "environment" {
   description = "Deployment environment"
   type        = string

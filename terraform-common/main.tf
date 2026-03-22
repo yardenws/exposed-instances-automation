@@ -39,7 +39,7 @@ module "lambda_scanner" {
   target_account_ids = var.target_account_ids
   skip_tag_key       = var.skip_tag_key
   skip_tag_value     = var.skip_tag_value
-  aws_region         = var.aws_region
+  scan_regions       = length(var.scan_regions) > 0 ? var.scan_regions : [var.aws_region]
   tags               = var.tags
 }
 

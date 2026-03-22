@@ -3,6 +3,7 @@ module "common" {
 
   environment          = var.environment
   aws_region           = var.aws_region
+  scan_regions         = var.scan_regions
   target_account_ids   = var.target_account_ids
   ses_sender_email     = var.ses_sender_email
   ses_recipient_emails = var.ses_recipient_emails

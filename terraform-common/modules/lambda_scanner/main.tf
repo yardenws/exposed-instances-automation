@@ -18,7 +18,7 @@ module "lambda" {
     TARGET_ACCOUNT_IDS = jsonencode(var.target_account_ids)
     SKIP_TAG_KEY       = var.skip_tag_key
     SKIP_TAG_VALUE     = var.skip_tag_value
-    AWS_REGION_SCAN    = var.aws_region
+    SCAN_REGIONS       = jsonencode(var.scan_regions)
   }
 
   tags = var.tags

@@ -10,8 +10,14 @@ variable "environment" {
 }
 
 variable "aws_region" {
-  description = "AWS region to deploy resources and scan"
+  description = "AWS region to deploy resources"
   type        = string
+}
+
+variable "scan_regions" {
+  description = "List of AWS regions to scan for exposed instances (defaults to aws_region if not set)"
+  type        = list(string)
+  default     = []
 }
 
 variable "scan_schedule" {

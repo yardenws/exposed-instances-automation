@@ -26,8 +26,9 @@ variable "skip_tag_value" {
   type = string
 }
 
-variable "aws_region" {
-  type = string
+variable "scan_regions" {
+  description = "List of AWS regions to scan"
+  type        = list(string)
 }
 
 variable "tags" {

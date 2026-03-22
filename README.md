@@ -34,7 +34,7 @@ Slack /scan command ──────────┘          │
 
 | Lambda | Role | What It Does |
 |--------|------|--------------|
-| **Scanner** | Worker | Scans target AWS accounts for EC2 instances with public IPs and permissive security groups |
+| **Scanner** | Worker | Scans target AWS accounts (across configured regions) for EC2 instances with public IPs and permissive security groups |
 | **Agent** | Hub / Dispatcher | The central Lambda — handles all Slack interactions (slash commands, button clicks), runs Claude AI analysis on scan results, and invokes the other Lambdas accordingly |
 | **Mitigation** | Worker | Stops EC2 instances flagged by the scanner |
 | **Escalation** | Worker | Sends an SES email alert to the security team |
@@ -45,9 +45,9 @@ Slack /scan command ──────────┘          │
 
 Runs on a schedule via EventBridge → Step Functions, or on-demand via Slack `/scan` command.
 
-- Iterates over a list of target AWS account IDs
-- For each account, assumes a cross-account IAM role (`sts:AssumeRole`) to obtain temporary credentials
-- Calls `ec2:DescribeInstances` across the configured region in the target account
+- Iterates over a list of target AWS account IDs and configured scan regions
+- For each account + region combination, assumes a cross-account IAM role (`sts:AssumeRole`) to obtain temporary credentials
+- Calls `ec2:DescribeInstances` in each region
 - Identifies instances that are **both** in a public subnet **and** have a public IP assigned
 - Skips instances with a configurable exclusion tag (e.g. `SkipScan: true`)
 - Collects per instance: Instance ID, Instance Type, Public IP, Subnet ID, VPC ID, Launch Time, Tags, Account ID
@@ -196,19 +196,6 @@ Create the following role in each target account to be scanned:
 }
 ```
 
-### Onboarding a New Account
-
-1. Deploy the `ExposedInstancesScannerRole` in the target account (a Terraform module is provided in `terraform-common/modules/target_account_role/`)
-2. Add the target account ID to the `target_account_ids` variable
-3. The scanner will automatically include the new account in the next scheduled scan
-
-### Required Information per Target Account
-
-| Field | Description | Example |
-|-------|-------------|---------|
-| Account ID | AWS account number | `123456789012` |
-| Regions | Regions to scan (or use default) | `["us-east-1", "eu-west-1"]` |
-
 ## Infrastructure
 
 All AWS infrastructure is managed with **Terraform**, following these conventions:
@@ -237,9 +224,7 @@ All AWS infrastructure is managed with **Terraform**, following these convention
 │       ├── api_gateway/              # HTTP API with /slack/interactions, /mitigate, /escalate
 │       ├── ses/                      # SES email identity verification (sender + recipients)
 │       ├── secrets/                  # Secrets Manager data sources for Slack & Claude API key
-│       ├── mock_instance/            # Optional: test EC2 instance with permissive SGs
-│       └── target_account_role/      # IAM role to deploy in each target account
-│
+│       |── mock_instance/            # Optional: test EC2 instance with permissive SGs
 ├── terraform-environments/           # Per-environment configs calling common module
 │   ├── dev/
 │   │   ├── backend/                  # Bootstrap: S3 bucket + KMS key for remote state
@@ -292,7 +277,8 @@ All AWS infrastructure is managed with **Terraform**, following these convention
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `aws_region` | AWS region to deploy and scan | `us-east-1` |
+| `aws_region` | AWS region to deploy infrastructure | `us-east-1` |
+| `scan_regions` | List of AWS regions to scan (defaults to `aws_region`) | `["us-east-1", "eu-west-1"]` |
 | `environment` | Deployment environment | `dev` |
 | `scan_schedule` | EventBridge schedule expression | `rate(6 hours)` |
 | `skip_tag_key` | Tag key to exclude instances from scan | `SkipScan` |
